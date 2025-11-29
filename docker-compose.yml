@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    restart: always
+
+  keycloak:
+    image: keycloak/keycloak:25.0.5
+    container_name: keycloak
+    hostname: auth.local
+    command: start-dev
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: postgres
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: secret
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin-password
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_STRICT: "false"
+    ports:
+      - "8180:8080"
+    depends_on:
+      - postgres
+    networks:
+      - keycloak-net
+    restart: always
+
+volumes:
+  keycloak-db-data:
+
+networks:
+  keycloak-net:
+    driver: bridge
